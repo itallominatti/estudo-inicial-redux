@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .content {
+            width: 50%;
+            height: 26rem;
+            margin: auto;
+            background-color: #fefefe;
+        }
+
+        h1 {
+            padding: 0 2rem;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 1px;
+            background-color: #000;
+            margin-top: 1rem;
+        }
+
+        li {
+            list-style: none;
+            background-color: #f1f1f1;
+            margin: 0 1.5rem 0.5rem 0;
+            padding: 0.4rem;
+        }
+
+        .completou::after {
+            background-color: green;
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-left: 10px;
+            border-radius: 50%;
+        }
+
+        .naoCompletou::after {
+            background-color: red;
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-left: 10px;
+            border-radius: 50%;
+        }
+
+        .botoes::before {
+            content: '';
+            display: block;
+            width: 90%;
+            height: 1px;
+            background-color: #000;
+            margin-top: 1rem;
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            margin: 0.5rem 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #f1f1f1;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <h1> Aluno : <span class="aluno"></span> dias restantes: <span class="dias"></span> </h1>
+        <div class="aulas">
+            <ul>
+                <li>Design</li>
+                <li>HTML</li>
+                <li>CSS</li>
+                <li>JavaScript</li>
+            </ul>
+            <div class="botoes">
+                <button onclick="store.dispatch(incrementarTempo())">Incrementar</button>
+                <button onclick="store.dispatch(reduzirTempo())">Reduzir</button>
+                <button onclick="store.dispatch(completar_curso())">Completar Curso</button>
+                <button onclick="store.dispatch(resetar_curso())">Resetar Curso</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.1.1/redux.min.js"></script>
+    <script>
+        const aluno = {
+            nome: 'André Rafael',
+            email: 'andre@origamid.com',
+            diasRestantes: 120,
+        };
+
+        const aulas = [
+            {
+                id: 1,
+                nome: 'Design',
+                completa: true,
+            },
+            {
+                id: 2,
+                nome: 'HTML',
+                completa: false,
+            },
+            {
+                id: 3,
+                nome: 'CSS',
+                completa: false,
+            },
+            {
+                id: 4,
+                nome: 'JavaScript',
+                completa: false,
+            },
+        ];
+
+        const INCREMENTAR_TEMPO = 'INCREMENTAR_TEMPO';
+        const REDUZIR_TEMPO = 'REDUZIR_TEMPO';
+        const MODIFICAR_EMAIL = 'MODIFICAR_EMAIL';
+
+        const incrementarTempo = () => {
+            return {
+                type: INCREMENTAR_TEMPO,
+            };
+        };
+
+        const reduzirTempo = () => {
+            return {
+                type: REDUZIR_TEMPO,
+            };
+        }
+
+        const modificarEmail = (email) => {
+            return {
+                type: MODIFICAR_EMAIL,
+                email,
+            };
+        }
+
+        const alunoReducer = (state = aluno, action) => {
+            switch (action.type) {
+                case INCREMENTAR_TEMPO:
+                    return {
+                        ...state,
+                        diasRestantes: state.diasRestantes + 1,
+                    }
+                case REDUZIR_TEMPO:
+                    return {
+                        ...state,
+                        diasRestantes: state.diasRestantes - 1,
+                    }
+                case MODIFICAR_EMAIL:
+                    return {
+                        ...state,
+                        email: action.email
+                    }
+                default:
+                    return state;
+            }
+        }
+
+        const COMPLETAR_AULA = 'COMPLETAR_AULA';
+        const completar_aula = (id) => {
+            return {
+                type: COMPLETAR_AULA,
+                id,
+            };
+        }
+
+        const COMPLETAR_CURSO = 'COMPLETAR_CURSO';
+        const completar_curso = () => {
+            return {
+                type: COMPLETAR_CURSO,
+            };
+        }
+
+        const RESETAR_CURSO = 'RESETAR_CURSO';
+        const resetar_curso = () => {
+            return {
+                type: RESETAR_CURSO,
+            };
+        }
+
+        const aulasReducer = (state = aulas, action) => {
+            switch (action.type) {
+                case COMPLETAR_AULA:
+                    return state.map((aula) => {
+                        if (aula.id === action.id) {
+                            return {
+                                ...aula,
+                                completa: !aula.completa,
+                            };
+                        }
+                        return aula;
+                    })
+                case COMPLETAR_CURSO:
+                    return state.map((aula) => {
+                        return {
+                            ...aula,
+                            completa: true,
+                        };
+                    });
+                case RESETAR_CURSO:
+                    return state.map((aula) => {
+                        return {
+                            ...aula,
+                            completa: false,
+                        }
+                    })
+                default:
+                    return state;
+            }
+        }
+
+        const reducer = Redux.combineReducers({
+            aluno: alunoReducer,
+            aulas: aulasReducer,
+        })
+
+        const store = Redux.createStore(reducer);
+
+        function render() {
+            const aluno = document.querySelector('.aluno');
+            const diasRestantes = document.querySelector('.dias');
+            diasRestantes.textContent = store.getState().aluno.diasRestantes;
+            aluno.textContent = store.getState().aluno.nome;
+
+            const aulas = document.querySelectorAll('.aulas li');
+            aulas.forEach((aula, index) => {
+                aula.classList = '';
+                if (store.getState().aulas[index].completa) {
+                    aula.classList.add('completou');
+                } else {
+                    aula.classList.add('naoCompletou');
+                }
+            });
+        }
+
+        store.subscribe(render);
+        console.log(store.getState());
+        store.dispatch(incrementarTempo());
+        console.log(store.getState());
+    </script>
+</body>
+
+</html>
